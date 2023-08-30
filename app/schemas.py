@@ -18,3 +18,21 @@ class UserUpdate(BaseModel):
 
 class Respuesta(BaseModel):
     mensaje:str
+
+class UserToken(BaseModel):
+    username:str
+    password:str
+
+    class Config:
+        orm_mode=True
+
+class Consultas(BaseModel):
+    id:int = 0
+    id_user:int = 0
+    date:str
+    search:str
+
+    class Config:
+        orm_mode=True
+
+ 
