@@ -5,10 +5,17 @@ from starlette.responses import RedirectResponse
 import app.models as models,app.schemas as schemas
 from .conexion import SessionLocal, engine
 from sqlalchemy.orm import Session
+from app.routes.auth import auth_routes
+from app.routes.accuweather import users_verificated
+from dotenv import load_dotenv
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+app.include_router(auth_routes, prefix="/api")
+app.include_router(users_verificated, prefix="/api")
+
+load_dotenv()
 
 def get_db():
     try:
@@ -50,3 +57,4 @@ def delete_users(ususario_id:int, db:Session=Depends(get_db)):
     db.commit()
     respuesta = schemas.Respuesta(mensaje="Ususario eliminado exitosamente")
     return  respuesta
+
