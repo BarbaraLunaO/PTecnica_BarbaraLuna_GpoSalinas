@@ -35,7 +35,7 @@ def getToken(userTyped: UserTyped, db:Session=Depends(get_db)):
     else:
         return write_token(userTyped.model_dump())
 
-@auth_routes.post("/verify/token")
+@auth_routes.get("/verify/token")
 def verify_token(Authorization: str = Header):
     if Authorization:
         return validate_token(Authorization, output=True)

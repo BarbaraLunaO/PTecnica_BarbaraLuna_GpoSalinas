@@ -1,5 +1,5 @@
-from typing import List
-from fastapi import FastAPI
+from typing import List, Union
+from fastapi import FastAPI, HTTPException
 from fastapi.params import Depends
 from starlette.responses import RedirectResponse
 import app.models as models,app.schemas as schemas
@@ -33,28 +33,46 @@ def show_users(db:Session=Depends(get_db)):
     usuarios = db.query(models.User).all()
     return  usuarios
 
-@app.post('/usuarios/', response_model=schemas.User)
+@app.post('/usuarios/')
 def create_users(entrada:schemas.User ,db:Session=Depends(get_db)):
-    usuario = models.User(username = entrada.username, password=entrada.password, rol=entrada.rol)
+    existing_user = db.query(models.User).filter(models.User.username == entrada.username).first()
+
+    if existing_user:
+        return {"message": "Username ya ocupado"}, existing_user
+
+    usuario = models.User(username=entrada.username, password=entrada.password, rol=entrada.rol)
     db.add(usuario)
     db.commit()
-    db.refresh
-    return  usuario
+    db.refresh(usuario)
+    return usuario
 
-@app.put('/usuarios/{usuario_id}', response_model=schemas.User)
-def update_users(ususario_id:int, entrada:schemas.UserUpdate ,db:Session=Depends(get_db)):
-    usuario = db.query(models.User).filter_by(id=ususario_id).first()
-    usuario.rol = entrada.rol
-    db.add(usuario)
-    db.commit()
-    db.refresh
-    return  usuario
 
-@app.delete('/usuarios/{usuario_id}', response_model=schemas.Respuesta)
-def delete_users(ususario_id:int, db:Session=Depends(get_db)):
-    usuario = db.query(models.User).filter_by(id=ususario_id).first()
-    db.delete(usuario)
-    db.commit()
-    respuesta = schemas.Respuesta(mensaje="Ususario eliminado exitosamente")
+@app.put('/usuarios/')
+def update_users(usuario_id:int, entrada:schemas.UserUpdate ,db:Session=Depends(get_db)):
+    usuario = db.query(models.User).filter_by(id=usuario_id).first()
+
+    if usuario:
+        usuario.rol = entrada.rol
+        db.add(usuario)
+        db.commit()
+        db.refresh
+        return  {"message": "Rol actualizado"}, usuario
+    else:
+        return {"message": "Usuario no existente"}
+
+
+@app.delete('/usuarios/', response_model=schemas.Respuesta)
+def delete_users(usuario_id:int, db:Session=Depends(get_db)):
+    usuario = db.query(models.User).filter_by(id=usuario_id).first()
+    if usuario:
+        db.delete(usuario)
+        db.commit()
+        consultas = db.query(models.Consultas).filter_by(id_user=usuario_id).all()
+        if consultas:
+            db.delete(consultas)
+            db.commit
+        respuesta = schemas.Respuesta(mensaje="Ususario y Consultas eliminados exitosamente")
+    else:
+        respuesta = schemas.Respuesta(mensaje="Usuario no encontrado, ingrese un id disponible")
     return  respuesta
 

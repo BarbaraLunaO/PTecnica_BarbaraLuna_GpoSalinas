@@ -18,7 +18,7 @@ def get_db():
     finally:
         db.close()
 
-@users_verificated.post("/weather/key/")
+@users_verificated.get("/weather/key/")
 def get_key(lugar: str, Authorization: str = Header, db:Session=Depends(get_db)):
     fecha = datetime.now()
     fecha_str = fecha.strftime("%d-%m-%Y %H:%M")
@@ -34,11 +34,11 @@ def get_key(lugar: str, Authorization: str = Header, db:Session=Depends(get_db))
 
     return get(f'http://dataservice.accuweather.com/locations/v1/cities/autocomplete?apikey=%09PN9N6NdGl8iIsHh3LYAAkwTcca5y5CsI&q={lugar}').json()
 
-@users_verificated.post("/weather/forecast")
+@users_verificated.get("/weather/forecast")
 def get_forecast(key: str):
     return get(f"http://dataservice.accuweather.com/forecasts/v1/daily/1day/{key}?apikey=PN9N6NdGl8iIsHh3LYAAkwTcca5y5CsI").json()
 
-@users_verificated.post("/consultaDB")
+@users_verificated.get("/consultaDB")
 def consultar_datos(consulta:schemas.ConsultasBusqueda or schemas.ConsultasFecha, db:Session=Depends(get_db)):
     #consulta_db = db.query(models.Consultas).all()
 
