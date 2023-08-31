@@ -35,4 +35,12 @@ class Consultas(BaseModel):
     class Config:
         orm_mode=True
 
- 
+class ConsultasFecha(BaseModel):
+    tipo: str
+    fecha_inicio: str
+    fecha_fin:str
+    orden: str
+
+class ConsultasBusqueda(BaseModel):
+    tipo: str
+    orden: str
